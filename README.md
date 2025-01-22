@@ -48,6 +48,8 @@ CLIENT_SECRET='P3s<w0rd'
 
 Install python libraries (dependencies):
 ```bash
+$ pip install requests
+$ pip install python-dotenv
 $ pip install asyncio
 $ pip install aiohttp
 ```
