@@ -1,3 +1,4 @@
+import asyncio
 import os
 
 from dotenv import load_dotenv
@@ -21,6 +22,11 @@ class ServiceManager:
         self.services['SCA'] = SCAPoliciesService(client)
 
     def enable(self, name):
+        if name == 'all':
+            for service in self.services.values():
+                service.enable()
+            return True
+
         if name in self.services:
             self.services[name].enable()
             return True
@@ -32,16 +38,17 @@ class ServiceManager:
             return True
         return False
 
-    def run(self):
+    async def run(self):
         roles = []
-        self.services['Roles'].run(roles)
+        await self.services['Roles'].run(roles)
 
         # Run all other services afterward
+        tasks = []
         for name in self.services:
             if name == 'Roles':
                 continue
-
             if self.services[name].enabled:
-                self.services[name].run(roles)
+                tasks.append(self.services[name].run(roles))
+        await asyncio.gather(*tasks)
 
         return roles

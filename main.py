@@ -1,3 +1,4 @@
+import asyncio
 import cmd
 import logging
 import os
@@ -12,7 +13,7 @@ class Cli(cmd.Cmd):
     def __init__(self):
         super().__init__()
         self.prompt = '[] # '
-        self.intro = 'Welcome to CyberArk Role Explorer!'
+        self.intro = 'Welcome to CyberArk Explorer!'
 
     service_manager = None
     roles = []
@@ -43,10 +44,6 @@ class Cli(cmd.Cmd):
 
     def do_ls(self, args):
         """List roles and associated services"""
-        if self.service_manager is None:
-            print('Not logged in')
-            return
-
         if len(args) < 1:
             print('Missing argument: roles, services\n')
             return
@@ -81,10 +78,6 @@ class Cli(cmd.Cmd):
 
     def do_cat(self, args):
         """Show role and associated services"""
-        if self.service_manager is None:
-            print('Not logged in')
-            return
-
         if not args:
             print('Missing argument: <role name>')
             return
@@ -106,7 +99,7 @@ class Cli(cmd.Cmd):
             return
 
         print('Please wait...')
-        self.roles = self.service_manager.run()
+        self.roles = asyncio.run(self.service_manager.run())
         print('Scan complete!')
 
     def do_enable(self, args):
@@ -118,6 +111,7 @@ class Cli(cmd.Cmd):
         if not args:
             print('Missing argument: <service name>')
             return
+
         if self.service_manager.enable(args):
             print(f'Service {args} enabled')
         else:
@@ -206,9 +200,9 @@ class Cli(cmd.Cmd):
     def __login_from_prompt(self):
         tenant_id = input('Please enter tenant id <eg: acme (for acme.cyberark.cloud)>: ')
         client_id = input('Client id: ')
-        client_secret = input('Client secret')
+        client_secret = input('Client secret: ')
         self.__login(tenant_id, client_id, client_secret)
 
 if __name__ == '__main__':
-    logging.getLogger().setLevel(logging.INFO)
+    logging.getLogger().setLevel(logging.DEBUG)
     Cli().cmdloop()

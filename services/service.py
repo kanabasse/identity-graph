@@ -4,7 +4,7 @@ class Service:
         self.client = client
         self.enabled = False
 
-    def run(self, roles):
+    async def run(self, roles):
         pass
 
     def enable(self):
