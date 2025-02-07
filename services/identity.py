@@ -3,6 +3,7 @@ import json
 import logging
 
 import aiohttp
+from tqdm.asyncio import tqdm_asyncio
 
 from objects.identity import Role, RoleMember, Webapp
 from services.service import Service, ServiceData
@@ -43,13 +44,15 @@ class IdentityMembersService(Service):
             logging.warning("Identity Members Service is disabled")
             return roles
 
-        await asyncio.create_task(self.__load_roles_members(roles))
+        await asyncio.gather(self.__load_roles_members(roles))
 
     async def __load_roles_members(self, roles):
         async with aiohttp.ClientSession() as session:
-            await asyncio.gather(
+            await tqdm_asyncio.gather(
                 *[self.__load_role_members(role, session) for role in roles],
-                return_exceptions = True
+                desc="Loading Identity roles members",
+                unit='role',
+                colour='#ffffff'
             )
 
     async def __load_role_members(self, role, session):
@@ -76,13 +79,15 @@ class IdentityWebAppsService(Service):
         if not self.enabled:
             logging.warning("Identity WebApp Service is disabled")
             return roles
-        await asyncio.create_task(self.__load_roles_webapps(roles))
+        return await asyncio.create_task(self.__load_roles_webapps(roles))
 
     async def __load_roles_webapps(self, roles):
         async with aiohttp.ClientSession() as session:
-            roles = await asyncio.gather(
+            roles = await tqdm_asyncio.gather(
                 *[self.__load_role_webapps(role, session) for role in roles],
-                return_exceptions = True
+                desc="Loading Identity roles webapps",
+                unit='role',
+                colour='#ffffff'
             )
 
             return roles

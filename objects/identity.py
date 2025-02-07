@@ -41,7 +41,11 @@ class SCAPolicy(CyberarkObject):
 
 class SCAPolicyMember(Member):
     def __init__(self, policy_member_data):
-        super().__init__(policy_member_data['entityName'], policy_member_data['entityClass'])
+        if 'entityClass' in policy_member_data:
+            super().__init__(policy_member_data['entityName'], policy_member_data['entityClass'])
+        else:
+            super().__init__(policy_member_data['entityName'], 'user')
+
 
 class SIAPolicy(CyberarkObject):
     def __init__(self, policy_data):
@@ -53,6 +57,9 @@ class SIAPolicyRule(CyberarkObject):
         super().__init__(policy_rule_data['ruleName'], policy_rule_data['ruleName'])
         self.members = []
         self.policy_name = policy_name
+
+    def __str__(self):
+        return f'{self.policy_name} (rule: {self.name})'
 
 class Webapp(CyberarkObject):
     def __init__(self, webapp_data):

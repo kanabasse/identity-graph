@@ -2,6 +2,7 @@ import asyncio
 import logging
 
 import aiohttp
+from tqdm.asyncio import tqdm_asyncio
 
 from objects.identity import Safe, SafeMember
 from services.service import Service, ServiceData
@@ -52,9 +53,11 @@ class PrivCloudSafeService(Service):
 
     async def __load_safes_members(self, safes):
         async with aiohttp.ClientSession() as session:
-            await asyncio.gather(
+            await tqdm_asyncio.gather(
                 *[self.__load_safe_members(safe, session) for safe in safes],
-                return_exceptions = True
+                desc="Loading Privilege Cloud safes members",
+                unit='safe',
+                colour='#ffffff'
             )
 
     async def __load_safe_members(self, safe, session):

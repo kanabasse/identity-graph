@@ -1,9 +1,5 @@
 import asyncio
-import os
 
-from dotenv import load_dotenv
-
-from api.client import CyberArkPlatformClient
 from services.identity import IdentityRoleService, IdentityMembersService, IdentityWebAppsService
 from services.privilege_cloud import PrivCloudSafeService
 from services.secure_cloud_access import SCAPoliciesService
@@ -38,17 +34,13 @@ class ServiceManager:
             return True
         return False
 
-    async def run(self):
+    def run(self):
         roles = []
-        await self.services['Roles'].run(roles)
-
-        # Run all other services afterward
-        tasks = []
+        asyncio.run(self.services['Roles'].run(roles))
         for name in self.services:
             if name == 'Roles':
                 continue
             if self.services[name].enabled:
-                tasks.append(self.services[name].run(roles))
-        await asyncio.gather(*tasks)
+                asyncio.run(self.services[name].run(roles))
 
         return roles

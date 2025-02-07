@@ -2,6 +2,7 @@ import asyncio
 import logging
 
 import aiohttp
+from tqdm.asyncio import tqdm_asyncio
 
 from objects.identity import SCAPolicy, SCAPolicyMember
 from services.service import Service, ServiceData
@@ -52,9 +53,11 @@ class SCAPoliciesService(Service):
 
     async def __load_policies_members(self, policies):
         async with aiohttp.ClientSession() as session:
-            await asyncio.gather(
+            await tqdm_asyncio.gather(
                 *[self.__load_policy_members(policy, session) for policy in policies],
-                return_exceptions = True
+                desc="Loading SCA policy members",
+                unit='policy',
+                colour='#ffffff'
             )
 
     async def __load_policy_members(self, policy, session):

@@ -3,17 +3,19 @@ import cmd
 import logging
 import os
 from pathlib import Path
+from time import sleep
 
 from dotenv import load_dotenv
+from tqdm import tqdm
 
-from api.client import OAuthClient, CyberArkPlatformClient
+from api.client import CyberArkPlatformClient
 from services.manager import ServiceManager
 
 class Cli(cmd.Cmd):
     def __init__(self):
         super().__init__()
         self.prompt = '[] # '
-        self.intro = 'Welcome to CyberArk Explorer!'
+        self.intro = 'Welcome to Identity Graph'
 
     service_manager = None
     roles = []
@@ -23,6 +25,12 @@ class Cli(cmd.Cmd):
 
     def postloop(self):
         logging.debug('Deallocate Service Manager')
+
+    def do_load(self, args):
+        text = ""
+        for char in tqdm(["a", "b", "c", "d"]):
+            sleep(0.25)
+            text = text + char
 
     def do_login(self, args):
         """Login to CyberArk Platform"""
@@ -99,7 +107,7 @@ class Cli(cmd.Cmd):
             return
 
         print('Please wait...')
-        self.roles = asyncio.run(self.service_manager.run())
+        self.roles = self.service_manager.run()
         print('Scan complete!')
 
     def do_enable(self, args):
@@ -113,7 +121,10 @@ class Cli(cmd.Cmd):
             return
 
         if self.service_manager.enable(args):
-            print(f'Service {args} enabled')
+            if args == 'all':
+                print(f'All services enabled')
+            else:
+                print(f'Service {args} enabled')
         else:
             print(f'Failed to enable {args}')
 
@@ -204,5 +215,5 @@ class Cli(cmd.Cmd):
         self.__login(tenant_id, client_id, client_secret)
 
 if __name__ == '__main__':
-    logging.getLogger().setLevel(logging.DEBUG)
+    logging.getLogger().setLevel(logging.WARNING)
     Cli().cmdloop()

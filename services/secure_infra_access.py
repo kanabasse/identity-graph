@@ -2,6 +2,7 @@ import asyncio
 import logging
 
 import aiohttp
+from tqdm.asyncio import tqdm_asyncio
 
 from objects.identity import SIAPolicy, SIAPolicyRule, SIAPolicyRuleMember
 from services.service import Service, ServiceData
@@ -33,7 +34,7 @@ class SIAPoliciesService(Service):
                 continue
             data = []
             for (rule, policy) in policyrules_by_role[role.name]:
-                data.append(f'{policy.name} (rule: {rule.name})')
+                data.append(rule)
 
             role.services_data.append(ServiceData('SIA Policies', data))
 
@@ -57,9 +58,11 @@ class SIAPoliciesService(Service):
 
     async def __load_policies_members(self, policies):
         async with aiohttp.ClientSession() as session:
-            await asyncio.gather(
+            await tqdm_asyncio.gather(
                 *[self.__load_policy_members(policy, session) for policy in policies],
-                return_exceptions = True
+                desc="Loading SIA policy members",
+                unit='policy',
+                colour='#ffffff'
             )
 
     async def __load_policy_members(self, policy, session):
